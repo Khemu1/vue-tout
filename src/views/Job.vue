@@ -30,6 +30,7 @@ watch(
   }
 );
 
+
 watch(successState, (newState) => {
   if (newState) {
     toast.success("Job Deleted Successfully", {
@@ -42,7 +43,7 @@ watch(successState, (newState) => {
 });
 
 onMounted(async () => {
-  if (isNaN(Number(id))) {
+  if (!id) {
     router.push({ name: "NotFound" });
     return;
   }

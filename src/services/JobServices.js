@@ -34,7 +34,7 @@ const getAllJobs = async () => {
 /**
  * Fetches a job by ID from the JSON server.
  *
- * @param {number} id - The ID of the job to retrieve.
+ * @param {number|string} id - The ID of the job to retrieve.
  * @returns {Promise<import("../types/index").Job | undefined>} - The job with the specified ID, or undefined if not found.
  * @throws {Error} - Throws an error if there is a network issue or if the response is not successful.
  */
@@ -71,7 +71,6 @@ const addJob = async (job) => {
       method: "POST",
       body: JSON.stringify(job),
     });
-    console.log("cyka", response.json());
     if (!response.ok) {
       /**
        * @type {import("../types/index").ErrorRepsonse}

@@ -30,6 +30,7 @@ export const useGetJobs = () => {
   return { jobs, isLoading, errorState, handleGetJobs };
 };
 
+
 export const useGetJob = () => {
   /**
    * @type {import("vue").Ref<Job | undefined>}
@@ -40,7 +41,7 @@ export const useGetJob = () => {
 
   /**
    * Fetches the job by ID and handles state.
-   * @param {Number} id - Job ID to fetch.
+   * @param {number|string} id - Job ID to fetch.
    */
   const handleGetJob = async (id) => {
     try {
@@ -61,6 +62,7 @@ export const useGetJob = () => {
 export const useAddJob = () => {
   const job = ref(undefined);
   const isLoading = ref(false);
+  const isSuccess = ref(false);
   const errorState = ref({ message: undefined });
 
   /**
@@ -72,13 +74,14 @@ export const useAddJob = () => {
       errorState.value.message = undefined;
       isLoading.value = true;
       job.value = await addJob(job);
+      isSuccess.value = true;
     } catch (error) {
       if (error.message) {
         errorState.message = error.message;
       }
     }
   };
-  return { job, isLoading, errorState, handleAddJob };
+  return { job, isLoading, errorState, handleAddJob, isSuccess };
 };
 
 export const useDeleteJob = () => {

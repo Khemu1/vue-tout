@@ -1,26 +1,61 @@
 <script setup>
-import { reactive, toRaw } from "vue";
+import { useAddJob } from "../hooks/Jobs";
+import { reactive, toRaw, watch } from "vue";
+import { useRouter } from "vue-router";
+import { VueSpinnerBars } from "vue3-spinners";
+import { useToast } from "vue-toast-notification";
+
+const router = useRouter();
+const { isLoading, errorState, handleAddJob, isSuccess } = useAddJob();
 
 const data = reactive({
+  title: "",
   type: "Full-Time",
-  name: "",
   description: "",
-  salary: "Under $50K",
   location: "",
-  company: "",
-  company_description: "",
-  contact_email: "",
-  contact_phone: "",
+  salary: "Under $50K",
+  company: {
+    name: "",
+    description: "",
+    contactEmail: "",
+    contactPhone: "",
+  },
 });
+const toast = useToast();
 
 /**
- *
- * @param {Event} e
+ * @param {Event} e - The form submit event.
  */
-const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
-  console.log(toRaw(data));
+  const jobData = toRaw(data);
+  console.log("Job Data", jobData);
+
+  try {
+    await handleAddJob(jobData);
+  } catch (error) {
+    console.error("Failed to add job", error);
+  }
 };
+
+watch(isSuccess, (newValue) => {
+  if (newValue) {
+    toast.success("Job Added Successfully", {
+      position: "top-right",
+    });
+    setTimeout(() => {
+      router.push({ name: "Jobs" });
+    }, 2000);
+  }
+});
+
+watch(errorState, (newValue) => {
+  if (newValue.message) {
+    toast.error("Failed to add job", {
+      position: "top-right",
+    });
+  }
+});
 </script>
 
 <template>
@@ -51,19 +86,20 @@ const handleSubmit = (e) => {
           </div>
 
           <div class="mb-4">
-            <label class="block text-gray-700 font-bold mb-2"
+            <label for="title" class="block text-gray-700 font-bold mb-2"
               >Job Listing Name</label
             >
             <input
-              v-model="data.name"
+              v-model="data.title"
               type="text"
-              id="name"
-              name="name"
+              id="title"
+              name="title"
               class="border rounded w-full py-2 px-3 mb-2"
-              placeholder="eg. Beautiful Apartment In Miami"
+              placeholder="eg. Vue Native Developer"
               required
             />
           </div>
+
           <div class="mb-4">
             <label for="description" class="block text-gray-700 font-bold mb-2"
               >Description</label
@@ -79,7 +115,7 @@ const handleSubmit = (e) => {
           </div>
 
           <div class="mb-4">
-            <label for="type" class="block text-gray-700 font-bold mb-2"
+            <label for="salary" class="block text-gray-700 font-bold mb-2"
               >Salary</label
             >
             <select
@@ -104,7 +140,9 @@ const handleSubmit = (e) => {
           </div>
 
           <div class="mb-4">
-            <label class="block text-gray-700 font-bold mb-2"> Location </label>
+            <label for="location" class="block text-gray-700 font-bold mb-2"
+              >Location</label
+            >
             <input
               v-model="data.location"
               type="text"
@@ -119,14 +157,14 @@ const handleSubmit = (e) => {
           <h3 class="text-2xl mb-5">Company Info</h3>
 
           <div class="mb-4">
-            <label for="company" class="block text-gray-700 font-bold mb-2"
+            <label for="company_name" class="block text-gray-700 font-bold mb-2"
               >Company Name</label
             >
             <input
-              v-model="data.company"
+              v-model="data.company.name"
               type="text"
-              id="company"
-              name="company"
+              id="company_name"
+              name="company_name"
               class="border rounded w-full py-2 px-3"
               placeholder="Company Name"
             />
@@ -139,7 +177,7 @@ const handleSubmit = (e) => {
               >Company Description</label
             >
             <textarea
-              v-model="data.company_description"
+              v-model="data.company.description"
               id="company_description"
               name="company_description"
               class="border rounded w-full py-2 px-3"
@@ -155,7 +193,7 @@ const handleSubmit = (e) => {
               >Contact Email</label
             >
             <input
-              v-model="data.contact_email"
+              v-model="data.company.contactEmail"
               type="email"
               id="contact_email"
               name="contact_email"
@@ -164,6 +202,7 @@ const handleSubmit = (e) => {
               required
             />
           </div>
+
           <div class="mb-4">
             <label
               for="contact_phone"
@@ -171,7 +210,7 @@ const handleSubmit = (e) => {
               >Contact Phone</label
             >
             <input
-              v-model="data.contact_phone"
+              v-model="data.company.contactPhone"
               type="tel"
               id="contact_phone"
               name="contact_phone"
@@ -182,10 +221,12 @@ const handleSubmit = (e) => {
 
           <div>
             <button
-              class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline"
+              class="flex justify-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full w-full focus:outline-none focus:shadow-outline"
               type="submit"
+              :disabled="isSuccess && !isLoading"
             >
-              Add Job
+              <span v-if="isLoading" class="spinner"><VueSpinnerBars /></span>
+              <span v-else>Add Job</span>
             </button>
           </div>
         </form>
